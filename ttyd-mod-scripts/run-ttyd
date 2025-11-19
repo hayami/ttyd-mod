@@ -1,0 +1,43 @@
+#!/bin/sh
+set -e
+
+# Key held down behavior (macOS)
+#       Allows you to select the behavior when a key is held down
+#       for a long time. The two possible behaviors are:
+#         * show character accents menu (default)
+#             $ defaults write -g ApplePressAndHoldEnabled -bool true
+#         * repeat character while key held
+#             $ defaults write -g ApplePressAndHoldEnabled -bool false
+#       Restarting the Mac, closing the session or restarting the
+#       application is necessary to take into effect the changes.
+
+
+xterm_client_options=${xterm_client_options:-"xterm.js-client-options"}
+ttyd_bin=${ttyd_bin:-"ttyd"}
+ttyd_iface=${ttyd_iface:-"-i lo"}
+ttyd_port=${ttyd_port:-"-p 7681"}
+ttyd_ipv6=${ttyd_ipv6:-""}		# or --ipv6
+ttyd_debug=${ttyd_debug:-""}		# or --debug 7
+ttyd_once=${ttyd_once:-""}		# or --once
+ttyd_origin=${ttyd_origin:-"--check-origin"}
+ttyd_warnings=${ttyd_warnings:-""}
+ttyd_writable=${ttyd_writable:-"--writable"}
+ttyd_extra_args=${ttyd_extra_args:-""}
+
+if [ "${ttyd_client_options+set}" != "set" ]; then
+    ttyd_client_options=$(noquote=1 $xterm_client_options |
+        while read line; do
+            printf '%s\n' "--client-option"
+            printf '%s\n' "$line"
+        done
+    )
+fi
+save="$IFS"
+IFS='
+'
+set -- $ttyd_client_options
+IFS="$save"
+
+exec $ttyd_bin $ttyd_ipv6 $ttyd_iface $ttyd_port $ttyd_debug $ttyd_once	\
+	$ttyd_origin $ttyd_warnings $ttyd_writable $ttyd_extra_args	\
+	"$@" $SHELL -l

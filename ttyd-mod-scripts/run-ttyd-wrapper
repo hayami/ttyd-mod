@@ -1,0 +1,8 @@
+#!/bin/sh
+umask 022
+
+export PATH=$HOME/sys/local/opt/ttyd/bin:/usr/bin:/bin
+export xterm_client_options=$HOME/private/lib/misc/xterm.js-client-options
+
+$HOME/private/lib/misc/run-ttyd
+exit $?

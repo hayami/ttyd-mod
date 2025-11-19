@@ -1,0 +1,7 @@
+[Desktop Entry]
+# Place this file as $HOME/.config/autostart/ttyd.desktop
+Type=Application
+Name=ttyd
+Comment=ttyd
+Exec=/bin/sh -c 'while :; do sleep 5; date -Iseconds; $HOME/private/lib/misc/run-ttyd-wrapper; echo "exit-code=$?"; done > /tmp/xdg-desktop-autostart-ttyd.desktop-$$.log 2>&1'
+Terminal=false
