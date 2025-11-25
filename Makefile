@@ -89,7 +89,7 @@ patch-html:
 	ttyd-mod-scripts/patch-html-eaw-is-wide.sh $(src)
 	ttyd-mod-scripts/patch-html-paste-on-ctrl+v.sh $(src)
 	ttyd-mod-scripts/patch-html-trim-selection.sh $(src)
-	ttyd-mod-scripts/patch-html-weblinksh $(src)
+	ttyd-mod-scripts/patch-html-weblink.sh $(src)
 
 .PHONY:	patch-ttyd
 patch-ttyd:
