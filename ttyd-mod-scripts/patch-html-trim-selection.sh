@@ -2,6 +2,9 @@
 set -e
 src="$1"
 
+# Strip trailing whitespace when the selected text region is placed into
+# the clipboard.
+
 
 # colorcolumn adds trailing whitespace to any multiline copy-pasted content #332
 # https://github.com/vim/vim/issues/332

@@ -2,6 +2,11 @@
 set -e
 src="$1"
 
+# Enable Ctrl+V to paste clipboard text. Tested with the following browsers.
+#   - Mozilla Firefox for Linux
+#   - Google Chrome for Linux
+
+
 cd $src
 patch -p1 << 'EOF'
 diff --git a/html/src/components/terminal/xterm/index.ts b/html/src/components/terminal/xterm/index.ts
@@ -14,7 +19,7 @@ index b332154..30cbc96 100644
                      break;
 +                case 'enablePasteOnCtrlV':
 +                    if (value) {
-+                        console.log('[ttyd][paste] paste on Ctrl+V enabled');
++                        console.log('[ttyd-mod] paste on Ctrl+V enabled');
 +                        this.enablePasteOnCtrlV();
 +                    }
 +                    break;
@@ -46,7 +51,7 @@ index b332154..30cbc96 100644
 +                if (ua.includes('Firefox')) return firefox(e);
 +                if (ua.includes('Chrome')) return chromium(e);
 +                if (ua.includes('Chromium')) return chromium(e);
-+                console.log('[ttyd][paste] browser is not supported: ' + ua);
++                console.log('[ttyd-mod] browser is not supported: ' + ua);
 +            }
 +            return;
 +
@@ -61,7 +66,7 @@ index b332154..30cbc96 100644
 +                        if (text) terminal.paste(text);
 +                    })
 +                    .catch(err => {
-+                        console.error('[ttyd][paste] readText():', err);
++                        console.error('[ttyd-mod] readText():', err);
 +                    });
 +                e.preventDefault();
 +                return;

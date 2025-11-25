@@ -1,10 +1,10 @@
 # Force npx, yarn, and so on to create their caches under this directory
 npx	:= env HOME=$(PWD) npx
 
-# git clone https://github.com/tsl0922/ttyd ttyd-1.7.7-eccebc6-mod
-# cd ttyd-1.7.7-eccebc6-mod
+# git clone https://github.com/tsl0922/ttyd
+# cd ttyd
 # git reset --hard eccebc6
-src	= ttyd-1.7.7-eccebc6-mod
+src	= ttyd
 prefix	= /var/tmp/ttyd
 
 MAKEFLAGS += --no-print-directory
@@ -86,9 +86,10 @@ install: $(src)/build/ttyd
 
 .PHONY:	patch-html
 patch-html:
+	ttyd-mod-scripts/patch-html-eaw-is-wide.sh $(src)
 	ttyd-mod-scripts/patch-html-paste-on-ctrl+v.sh $(src)
 	ttyd-mod-scripts/patch-html-trim-selection.sh $(src)
-	ttyd-mod-scripts/patch-html-eaw-from-jisx0208.sh $(src)
+	ttyd-mod-scripts/patch-html-weblinksh $(src)
 
 .PHONY:	patch-ttyd
 patch-ttyd:

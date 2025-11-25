@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 src="$1"
-cd "$src"
 
+# Example Script
+
+
+cd "$src"
 exit 0
