@@ -21,7 +21,7 @@ patch -p1 << 'EOF'
      private webglAddon?: WebglAddon;
      private canvasAddon?: CanvasAddon;
      private zmodemAddon?: ZmodemAddon;
-@@ -643,4 +643,22 @@ export class Xterm {
+@@ -644,4 +644,22 @@ export class Xterm {
              return lines.replace(/[^\S\r\n]+(?=[\r\n]|$)/g, '');
          }
      }
