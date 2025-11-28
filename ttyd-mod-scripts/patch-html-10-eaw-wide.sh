@@ -2710,10 +2710,12 @@ rangelist() (
     cat_EastAsianWidth | grep "$pattern" | while read range rest; do
         case "$range" in
         $hexdigits)
+            #printf '  [%s, %s],\n' 0x$range 0x$range
             start=$(printf '%d' 0x$range)
             echo "[$start,$start]"
             ;;
         $hexdigits..$hexdigits)
+            #printf '  [%s, %s],\n' 0x${range%..*} 0x${range#*..}
             start=$(printf '%d' 0x${range%..*})
             end=$(printf '%d' 0x${range#*..})
             echo "[$start,$end]"
@@ -2732,27 +2734,63 @@ target="$src/html/node_modules/@xterm/addon-unicode11/lib/addon-unicode11.js"
 
 # ..., [0xFFE0, 0xFFE6]]
 just_before=',[65504,65510]'
-just_after=']'
 insert="$h4array"
-
-orig="${just_before}${just_after}"
-update="${just_before},${insert}${just_after}"
-
+orig="${just_before}"
+update="${just_before},${insert}"
 ttyd-mod-scripts/fsed "$orig" "$update" "$target"
 
 
 # Insert into HIGH_WIDE = [...] in @xterm/addon-unicode11/src/UnicodeV11.ts
 target="$src/html/node_modules/@xterm/addon-unicode11/lib/addon-unicode11.js"
 
+# ..., [0x1F0CF, 0x1F0CF], ...
+just_before=',[127183,127183]'
+insert='[127232,127242],[127248,127277],[127280,127337],[127344,127373]'
+orig="${just_before}"
+update="${just_before},${insert}"
+ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+
+# ..., [0x1F18E, 0x1F18E], ...
+just_before=',[127374,127374]'
+insert='[127375,127376]'
+orig="${just_before}"
+update="${just_before},${insert}"
+ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+
+# ..., [0x1F191, 0x1F19A], ...
+just_before=',[127377,127386]'
+insert='[127387,127404]'
+orig="${just_before}"
+update="${just_before},${insert}"
+ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+
 # ..., [0x30000, 0x3FFFD]]
 just_before=',[196608,262141]'
-just_after=']'
-insert="$h5array,$h6array"
-
-orig="${just_before}${just_after}"
-update="${just_before},${insert}${just_after}"
-
+insert='[917760,917999],[983040,1048573],[1048576,1114109]'
+orig="${just_before}"
+update="${just_before},${insert}"
 ttyd-mod-scripts/fsed "$orig" "$update" "$target"
 
 
 exit 0
+
+# const HIGH_WIDE = [
+#   [0x16FE0, 0x16FE3], [0x17000, 0x187F7],
+#   [0x18800, 0x18AF2], [0x1B000, 0x1B11E], [0x1B150, 0x1B152],
+#   [0x1B164, 0x1B167], [0x1B170, 0x1B2FB], [0x1F004, 0x1F004],
+#   [0x1F0CF, 0x1F0CF], [0x1F18E, 0x1F18E], [0x1F191, 0x1F19A],
+#   [0x1F200, 0x1F202], [0x1F210, 0x1F23B], [0x1F240, 0x1F248],
+#   [0x1F250, 0x1F251], [0x1F260, 0x1F265], [0x1F300, 0x1F320],
+#   [0x1F32D, 0x1F335], [0x1F337, 0x1F37C], [0x1F37E, 0x1F393],
+#   [0x1F3A0, 0x1F3CA], [0x1F3CF, 0x1F3D3], [0x1F3E0, 0x1F3F0],
+#   [0x1F3F4, 0x1F3F4], [0x1F3F8, 0x1F43E], [0x1F440, 0x1F440],
+#   [0x1F442, 0x1F4FC], [0x1F4FF, 0x1F53D], [0x1F54B, 0x1F54E],
+#   [0x1F550, 0x1F567], [0x1F57A, 0x1F57A], [0x1F595, 0x1F596],
+#   [0x1F5A4, 0x1F5A4], [0x1F5FB, 0x1F64F], [0x1F680, 0x1F6C5],
+#   [0x1F6CC, 0x1F6CC], [0x1F6D0, 0x1F6D2], [0x1F6D5, 0x1F6D5],
+#   [0x1F6EB, 0x1F6EC], [0x1F6F4, 0x1F6FA], [0x1F7E0, 0x1F7EB],
+#   [0x1F90D, 0x1F971], [0x1F973, 0x1F976], [0x1F97A, 0x1F9A2],
+#   [0x1F9A5, 0x1F9AA], [0x1F9AE, 0x1F9CA], [0x1F9CD, 0x1F9FF],
+#   [0x1FA70, 0x1FA73], [0x1FA78, 0x1FA7A], [0x1FA80, 0x1FA82],
+#   [0x1FA90, 0x1FA95], [0x20000, 0x2FFFD], [0x30000, 0x3FFFD]
+# ];
