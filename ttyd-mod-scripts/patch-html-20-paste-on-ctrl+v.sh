@@ -9,8 +9,6 @@ src="$1"
 
 cd $src
 patch -p1 << 'EOF'
-diff --git a/html/src/components/terminal/xterm/index.ts b/html/src/components/terminal/xterm/index.ts
-index b332154..30cbc96 100644
 --- a/html/src/components/terminal/xterm/index.ts
 +++ b/html/src/components/terminal/xterm/index.ts
 @@ -455,6 +455,12 @@ export class Xterm {
@@ -19,20 +17,20 @@ index b332154..30cbc96 100644
                      break;
 +                case 'enablePasteOnCtrlV':
 +                    if (value) {
-+                        console.log('[ttyd-mod] paste on Ctrl+V enabled');
-+                        this.enablePasteOnCtrlV();
++                        const enabled = this.enablePasteOnCtrlV();
++                        if (enabled) console.log('[ttyd-mod] paste on Ctrl+V enabled');
 +                    }
 +                    break;
                  default:
                      console.log(`[ttyd] option: ${key}=${JSON.stringify(value)}`);
                      if (terminal.options[key] instanceof Object) {
-@@ -532,4 +538,74 @@ export class Xterm {
+@@ -532,4 +538,75 @@ export class Xterm {
                  break;
          }
      }
 +
 +    @bind
-+    private enablePasteOnCtrlV() {
++    private enablePasteOnCtrlV(): boolean {
 +        const { terminal } = this;
 +
 +        const isCtrlV = (e: KeyboardEvent): boolean =>
@@ -44,6 +42,18 @@ index b332154..30cbc96 100644
 +            e.type === 'keydown' &&
 +            !e.repeat &&
 +            !e.isComposing;
++
++        terminal.attachCustomKeyEventHandler((e: KeyboardEvent): boolean => {
++            // In the case of Firefox, if false is returned here when
++            // Ctrl+V is pressed, Firefox would paste by itself. Other
++            // conditions also required, such as e.preventDefault() not
++            // being called inside the keydown event handlers.
++
++            // returns whether the event should be processed by xterm.js
++            return !isCtrlV(e);
++        });
++        document.addEventListener('keydown', pasteHandler, { capture: false });
++        return true;
 +
 +        function pasteHandler(e: KeyboardEvent): void {
 +            if (isCtrlV(e)) {
@@ -88,17 +98,6 @@ index b332154..30cbc96 100644
 +                });
 +            }
 +        }
-+
-+        terminal.attachCustomKeyEventHandler((e: KeyboardEvent): boolean => {
-+            // In the case of Firefox, if false is returned here when
-+            // Ctrl+V is pressed, Firefox would paste by itself. Other
-+            // conditions also required, such as e.preventDefault() not
-+            // being called inside the keydown event handlers.
-+
-+            // returns whether the event should be processed by xterm.js
-+            return !isCtrlV(e);
-+        });
-+        document.addEventListener('keydown', pasteHandler, { capture: false });
 +    }
  }
 EOF

@@ -10,8 +10,6 @@ src="$1"
 
 cd $src
 patch -p1 << 'EOF'
-diff --git a/html/src/components/terminal/xterm/index.ts b/html/src/components/terminal/xterm/index.ts
-index a79efc9..143b882 100644
 --- a/html/src/components/terminal/xterm/index.ts
 +++ b/html/src/components/terminal/xterm/index.ts
 @@ -87,7 +87,7 @@ export class Xterm {
@@ -23,9 +21,9 @@ index a79efc9..143b882 100644
      private webglAddon?: WebglAddon;
      private canvasAddon?: CanvasAddon;
      private zmodemAddon?: ZmodemAddon;
-@@ -608,4 +608,22 @@ export class Xterm {
-         });
-         document.addEventListener('keydown', pasteHandler, { capture: false });
+@@ -643,4 +643,22 @@ export class Xterm {
+             return lines.replace(/[^\S\r\n]+(?=[\r\n]|$)/g, '');
+         }
      }
 +
 +    @bind

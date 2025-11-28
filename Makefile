@@ -86,11 +86,8 @@ install: $(src)/build/ttyd
 
 .PHONY:	patch-html
 patch-html:
-	ttyd-mod-scripts/patch-html-eaw-is-wide.sh $(src)
-	ttyd-mod-scripts/patch-html-paste-on-ctrl+v.sh $(src)
-	ttyd-mod-scripts/patch-html-trim-selection.sh $(src)
-	ttyd-mod-scripts/patch-html-weblink.sh $(src)
+	set -ex; for i in ttyd-mod-scripts/patch-html-*; do $$i $(src); done
 
 .PHONY:	patch-ttyd
 patch-ttyd:
-	ttyd-mod-scripts/patch-ttyd-example.sh $(src)
+	set -ex; for i in ttyd-mod-scripts/patch-ttyd-*; do $$i $(src); done
