@@ -6,7 +6,11 @@ src="$1"
 # wide character width.
 
 
-cat_EastAsianWidth() {
+target="$src/html/node_modules/@xterm/addon-unicode11/lib/addon-unicode11.js"
+infile="$src/html/node_modules/@xterm/addon-unicode11/src/UnicodeV11.ts"
+TMPDIR=${TMPDIR:-/tmp}
+
+cat_EastAsianWidth() (
 # https://www.unicode.org/Public/16.0.0/ucd/EastAsianWidth.txt
 cat << 'EOF'
 # EastAsianWidth-16.0.0.txt
@@ -2696,101 +2700,151 @@ F0000..FFFFD   ; A  # Co [65534] <private-use-F0000>..<private-use-FFFFD>
 
 # EOF
 EOF
-}
-
+)
 
 hex="[0-9a-fA-F]"
 hex4digits="$hex$hex$hex$hex"
 hex5digits="$hex$hex$hex$hex$hex"
 hex6digits="$hex$hex$hex$hex$hex$hex"
 
-rangelist() (
+EastAsianWidth_rangelist() (
     pattern="$1"
     hexdigits="$2"
     cat_EastAsianWidth | grep "$pattern" | while read range rest; do
         case "$range" in
         $hexdigits)
-            #printf '  [%s, %s],\n' 0x$range 0x$range
             start=$(printf '%d' 0x$range)
-            echo "[$start,$start]"
+            echo "$start,$start"
             ;;
         $hexdigits..$hexdigits)
-            #printf '  [%s, %s],\n' 0x${range%..*} 0x${range#*..}
             start=$(printf '%d' 0x${range%..*})
             end=$(printf '%d' 0x${range#*..})
-            echo "[$start,$end]"
+            echo "$start,$end"
             ;;
         esac
     done
 )
 
-h4array=$(printf '%s' "$(rangelist '; A' "$hex4digits")" | tr '\n' ',')
-h5array=$(printf '%s' "$(rangelist '; A' "$hex5digits")" | tr '\n' ',')
-h6array=$(printf '%s' "$(rangelist '; A' "$hex6digits")" | tr '\n' ',')
+UnicodeV11_rangelist() (
+    varname="$1"
+    cat $infile \
+    | sed -n -e '/^const '"$varname"' =/,$p' \
+    | sed -n -e '1,/^];/p' \
+    | grep , \
+    | sed -e 's/^ *//' \
+          -e 's/\], /]\n/g' \
+          -e 's/, *$//' \
+    | sed -e 's/^\[//' -e 's/\]$//' -e 's/,/ /g' \
+    | while read start end; do
+        printf '%d,%d\n' $start $end
+    done
+)
 
+difflist() (
+    echo "$1" | sort -u -t, -k1n,2n > $TMPDIR/$$.1
+    (echo "$1" && echo "$2") | sort -u -t, -k1n,2n > $TMPDIR/$$.2
+    diff -u $TMPDIR/$$.1 $TMPDIR/$$.2 || :
+    rm -f $TMPDIR/$$.1 $TMPDIR/$$.2
+)
 
-# Insert into BMP_WIDE = [...] in @xterm/addon-unicode11/src/UnicodeV11.ts
-target="$src/html/node_modules/@xterm/addon-unicode11/lib/addon-unicode11.js"
+actionlist() (
+    stdin=$(cat)
+    match=
+    ranges=
+    (echo "$stdin" && echo END) | while IFS= read line; do
+        case "$line" in
+        "+"[0-9]*)
+            range=${line#'+'}
+            ranges="$ranges${ranges:+,}[$range]"
+            ;;
+        " "[0-9]*|END)
+            range=${line#' '}
+            if [ -n "$ranges" ]; then
+                if [ -z "$match" ]; then
+                    if [ "$range" = "END" ]; then
+                        echo "ERROR: no match target found" 2>&1
+                        exit 1
+                    fi
+                    echo "BEFORE [$range] $ranges"
+                else
+                    echo "AFTER [$match] $ranges"
+                fi
+            fi
+            match="$range"
+            ranges=""
+            ;;
+        *)
+            continue
+            ;;
+        esac
+    done
+)
 
-# ..., [0xFFE0, 0xFFE6]]
-just_before=',[65504,65510]'
-insert="$h4array"
-orig="${just_before}"
-update="${just_before},${insert}"
-ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+replace() (
+    old_str="$1"
+    new_str="$2"
+    dry_run="$3"
+    old_regex=$(echo "$old_str" | sed -e 's/\[/\\[/g' -e 's/\]/\\]/g')
 
+    old_size=$(wc -c < "$target")
+    if [ -n "$dry_run" ]; then
+        new_size=$(sed -e "s/$old_regex/$new_str/" < $target | wc -c)
+    else
+        sed -i -e "s/$old_regex/$new_str/" $target
+        new_size=$(wc -c < "$target")
+    fi
 
-# Insert into HIGH_WIDE = [...] in @xterm/addon-unicode11/src/UnicodeV11.ts
-target="$src/html/node_modules/@xterm/addon-unicode11/lib/addon-unicode11.js"
+    echo $((new_size - old_size))
+)
 
-# ..., [0x1F0CF, 0x1F0CF], ...
-just_before=',[127183,127183]'
-insert='[127232,127242],[127248,127277],[127280,127337],[127344,127373]'
-orig="${just_before}"
-update="${just_before},${insert}"
-ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+hexrange() (
+        r="$1"
+        r=${r#'['}
+        r=${r%']'}
+        r1=$(printf '0x%4X' ${r%,*})
+        r2=$(printf '0x%4X' ${r#*,})
+        echo "[$r1, $r2]"
+)
 
-# ..., [0x1F18E, 0x1F18E], ...
-just_before=',[127374,127374]'
-insert='[127375,127376]'
-orig="${just_before}"
-update="${just_before},${insert}"
-ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+do_actions() (
+    while read action match_range insert_ranges; do
 
-# ..., [0x1F191, 0x1F19A], ...
-just_before=',[127377,127386]'
-insert='[127387,127404]'
-orig="${just_before}"
-update="${just_before},${insert}"
-ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+        # verify that the $match_range matches the file only once
+        len=$(replace "$match_range" "" dry-run)
+        if [ $len -ne $((0 - ${#match_range})) ]; then
+            echo "ERROR: pattern $match_range matches multiple times in the file: $target" 1>&2
+            exit 1
+        fi
 
-# ..., [0x30000, 0x3FFFD]]
-just_before=',[196608,262141]'
-insert='[917760,917999],[983040,1048573],[1048576,1114109]'
-orig="${just_before}"
-update="${just_before},${insert}"
-ttyd-mod-scripts/fsed "$orig" "$update" "$target"
+        # verify that $joined_ranges is not present in the file
+        case "$action" in
+        BEFORE) joined_ranges="$insert_ranges,$match_range" ;;
+        AFTER) joined_ranges="$match_range,$insert_ranges" ;;
+        esac
+        len=$(replace "$joined_ranges" "" dry-run)
+        if [ $len -ne 0 ]; then
+             echo "ERROR: The ranges being inserted ($insert_ranges $action $match_range) already exists in the file: $target" 1>&2
+             exit 1
+        fi
 
+        # replace $match_range with $joined_ranges
+        #echo "Inserting additional ranges $action $match_range (= $(hexrange "$match_range"))"
+        len=$(replace "$match_range" "$joined_ranges")
+        if [ $len -ne $((0 - ${#match_range} + ${#joined_ranges})) ]; then
+             echo "ERROR: size mismatch: $action $match_range $target" 1>&2
+             exit 1
+        fi
+
+    done
+)
+
+base=$(UnicodeV11_rangelist BMP_WIDE)
+add=$(EastAsianWidth_rangelist '; A' "$hex4digits")
+difflist "$base" "$add" | actionlist | do_actions
+
+base=$(UnicodeV11_rangelist HIGH_WIDE)
+add=$(EastAsianWidth_rangelist '; A' "$hex5digits" && \
+      EastAsianWidth_rangelist '; A' "$hex6digits")
+difflist "$base" "$add" | actionlist | do_actions
 
 exit 0
-
-# const HIGH_WIDE = [
-#   [0x16FE0, 0x16FE3], [0x17000, 0x187F7],
-#   [0x18800, 0x18AF2], [0x1B000, 0x1B11E], [0x1B150, 0x1B152],
-#   [0x1B164, 0x1B167], [0x1B170, 0x1B2FB], [0x1F004, 0x1F004],
-#   [0x1F0CF, 0x1F0CF], [0x1F18E, 0x1F18E], [0x1F191, 0x1F19A],
-#   [0x1F200, 0x1F202], [0x1F210, 0x1F23B], [0x1F240, 0x1F248],
-#   [0x1F250, 0x1F251], [0x1F260, 0x1F265], [0x1F300, 0x1F320],
-#   [0x1F32D, 0x1F335], [0x1F337, 0x1F37C], [0x1F37E, 0x1F393],
-#   [0x1F3A0, 0x1F3CA], [0x1F3CF, 0x1F3D3], [0x1F3E0, 0x1F3F0],
-#   [0x1F3F4, 0x1F3F4], [0x1F3F8, 0x1F43E], [0x1F440, 0x1F440],
-#   [0x1F442, 0x1F4FC], [0x1F4FF, 0x1F53D], [0x1F54B, 0x1F54E],
-#   [0x1F550, 0x1F567], [0x1F57A, 0x1F57A], [0x1F595, 0x1F596],
-#   [0x1F5A4, 0x1F5A4], [0x1F5FB, 0x1F64F], [0x1F680, 0x1F6C5],
-#   [0x1F6CC, 0x1F6CC], [0x1F6D0, 0x1F6D2], [0x1F6D5, 0x1F6D5],
-#   [0x1F6EB, 0x1F6EC], [0x1F6F4, 0x1F6FA], [0x1F7E0, 0x1F7EB],
-#   [0x1F90D, 0x1F971], [0x1F973, 0x1F976], [0x1F97A, 0x1F9A2],
-#   [0x1F9A5, 0x1F9AA], [0x1F9AE, 0x1F9CA], [0x1F9CD, 0x1F9FF],
-#   [0x1FA70, 0x1FA73], [0x1FA78, 0x1FA7A], [0x1FA80, 0x1FA82],
-#   [0x1FA90, 0x1FA95], [0x20000, 0x2FFFD], [0x30000, 0x3FFFD]
-# ];
