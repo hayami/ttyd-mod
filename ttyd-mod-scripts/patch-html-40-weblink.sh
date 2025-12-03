@@ -12,7 +12,7 @@ cd $src
 patch -p1 << 'EOF'
 --- a/html/src/components/terminal/xterm/index.ts
 +++ b/html/src/components/terminal/xterm/index.ts
-@@ -87,7 +87,7 @@ export class Xterm {
+@@ -88,7 +88,7 @@ export class Xterm {
      private fitAddon = new FitAddon();
      private overlayAddon = new OverlayAddon();
      private clipboardAddon = new ClipboardAddon();
@@ -21,9 +21,9 @@ patch -p1 << 'EOF'
      private webglAddon?: WebglAddon;
      private canvasAddon?: CanvasAddon;
      private zmodemAddon?: ZmodemAddon;
-@@ -644,4 +644,22 @@ export class Xterm {
-             return lines.replace(/[^\S\r\n]+(?=[\r\n]|$)/g, '');
-         }
+@@ -626,4 +626,22 @@ export class Xterm {
+         };
+         return true;
      }
 +
 +    @bind
@@ -45,4 +45,5 @@ patch -p1 << 'EOF'
 +    }
  }
 EOF
+
 exit 0
