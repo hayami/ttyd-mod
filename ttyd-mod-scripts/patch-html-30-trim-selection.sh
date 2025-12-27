@@ -21,7 +21,7 @@ src="$1"
 #             ).join(Browser.isWindows ? '\r\n' : '\n');
 #
 #        -    return formattedResult;
-#        +    return ((f,v)=>f?f(v):v)(window.term?.trimSelection, formattedResult);
+#        +    return ((f,v) => f ? f(v) : v)(window.term?.trimSelection, formattedResult);
 #           }
 #
 #
