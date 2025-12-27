@@ -101,4 +101,5 @@ patch -p1 << 'EOF'
 +    }
  }
 EOF
+
 exit 0
