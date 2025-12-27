@@ -2,10 +2,10 @@
 set -e
 src="$1"
 
-# Left-clicking a URL opens it in the browser, but this conflicts with
-# selecting a text area with the left mouse button. This is inconvenient.
-# Therefore, left-clicks on links are now ignored when no modifier keys
-# are pressed.
+# In xterm.js with the WebLinksAddon enabled, left-clicking a URL opens
+# it in the browser, but this conflicts with selecting a text area using
+# the left mouse button, which is inconvenient. Therefore, left-clicks
+# on links are now ignored when no modifier keys are pressed.
 
 
 cd $src
