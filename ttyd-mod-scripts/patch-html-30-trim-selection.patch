@@ -1,0 +1,45 @@
+--- a/html/src/components/terminal/xterm/index.ts
++++ b/html/src/components/terminal/xterm/index.ts
+@@ -15,6 +15,7 @@ import '@xterm/xterm/css/xterm.css';
+ 
+ interface TtydTerminal extends Terminal {
+     fit(): void;
++    trimSelection(selection: string): string;
+ }
+ 
+ declare global {
+@@ -159,6 +160,7 @@ export class Xterm {
+         window.term.fit = () => {
+             this.fitAddon.fit();
+         };
++        window.term.trimSelection = str => str; // do nothing by default
+ 
+         terminal.loadAddon(fitAddon);
+         terminal.loadAddon(overlayAddon);
+@@ -461,6 +463,12 @@ export class Xterm {
+                         if (enabled) console.log('[ttyd-mod] paste on Ctrl+V enabled');
+                     }
+                     break;
++                case 'enableTrimSelection':
++                    if (value) {
++                        const enabled = this.enableTrimSelection();
++                        if (enabled) console.log('[ttyd-mod] trim selection enabled');
++                    }
++                    break;
+                 default:
+                     console.log(`[ttyd] option: ${key}=${JSON.stringify(value)}`);
+                     if (terminal.options[key] instanceof Object) {
+@@ -609,4 +617,13 @@ export class Xterm {
+             }
+         }
+     }
++
++    @bind
++    private enableTrimSelection(): boolean {
++        window.term.trimSelection = selection => {
++            // Trim trailing whitespace on each line
++            return selection.replace(/[^\S\r\n]+(?=[\r\n]|$)/g, '');
++        };
++        return true;
++    }
+ }

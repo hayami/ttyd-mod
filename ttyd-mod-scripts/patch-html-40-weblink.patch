@@ -1,0 +1,34 @@
+--- a/html/src/components/terminal/xterm/index.ts
++++ b/html/src/components/terminal/xterm/index.ts
+@@ -88,7 +88,7 @@ export class Xterm {
+     private fitAddon = new FitAddon();
+     private overlayAddon = new OverlayAddon();
+     private clipboardAddon = new ClipboardAddon();
+-    private webLinksAddon = new WebLinksAddon();
++    private webLinksAddon = new WebLinksAddon(this.webLinkHandler);
+     private webglAddon?: WebglAddon;
+     private canvasAddon?: CanvasAddon;
+     private zmodemAddon?: ZmodemAddon;
+@@ -626,4 +626,22 @@ export class Xterm {
+         };
+         return true;
+     }
++
++    @bind
++    private webLinkHandler(e: MouseEvent, uri: string): void {
++        const noModifierKey = !e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey;
++        if (noModifierKey) return;
++
++        const newWindow = window.open();
++        if (newWindow) {
++            try {
++                newWindow.opener = null;
++            } catch {
++                // no-op, Electron can throw
++            }
++            newWindow.location.href = uri;
++        } else {
++            console.warn('[ttyd-mod] Opening link blocked as opener could not be cleared');
++        }
++    }
+ }
