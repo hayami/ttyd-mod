@@ -1,3 +1,5 @@
+diff --git a/html/src/components/terminal/xterm/index.ts b/html/src/components/terminal/xterm/index.ts
+index b332154..3f913cb 100644
 --- a/html/src/components/terminal/xterm/index.ts
 +++ b/html/src/components/terminal/xterm/index.ts
 @@ -15,6 +15,7 @@ import '@xterm/xterm/css/xterm.css';
@@ -16,8 +18,8 @@
  
          terminal.loadAddon(fitAddon);
          terminal.loadAddon(overlayAddon);
-@@ -461,6 +463,12 @@ export class Xterm {
-                         if (enabled) console.log('[ttyd-mod] paste on Ctrl+V enabled');
+@@ -455,6 +457,12 @@ export class Xterm {
+                             break;
                      }
                      break;
 +                case 'enableTrimSelection':
@@ -29,8 +31,8 @@
                  default:
                      console.log(`[ttyd] option: ${key}=${JSON.stringify(value)}`);
                      if (terminal.options[key] instanceof Object) {
-@@ -609,4 +617,13 @@ export class Xterm {
-             }
+@@ -532,4 +540,13 @@ export class Xterm {
+                 break;
          }
      }
 +

@@ -1,7 +1,9 @@
+diff --git a/html/src/components/terminal/xterm/index.ts b/html/src/components/terminal/xterm/index.ts
+index a163ef6..c9503e2 100644
 --- a/html/src/components/terminal/xterm/index.ts
 +++ b/html/src/components/terminal/xterm/index.ts
-@@ -455,6 +455,12 @@ export class Xterm {
-                             break;
+@@ -463,6 +463,12 @@ export class Xterm {
+                         if (enabled) console.log('[ttyd-mod] trim selection enabled');
                      }
                      break;
 +                case 'enablePasteOnCtrlV':
@@ -13,8 +15,8 @@
                  default:
                      console.log(`[ttyd] option: ${key}=${JSON.stringify(value)}`);
                      if (terminal.options[key] instanceof Object) {
-@@ -532,4 +538,75 @@ export class Xterm {
-                 break;
+@@ -567,4 +573,75 @@ export class Xterm {
+             console.warn('[ttyd-mod] Opening link blocked as opener could not be cleared');
          }
      }
 +
