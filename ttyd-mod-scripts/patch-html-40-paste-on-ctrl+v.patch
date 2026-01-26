@@ -1,5 +1,5 @@
 diff --git a/html/src/components/terminal/xterm/index.ts b/html/src/components/terminal/xterm/index.ts
-index a163ef6..c9503e2 100644
+index a163ef6..9e7dac3 100644
 --- a/html/src/components/terminal/xterm/index.ts
 +++ b/html/src/components/terminal/xterm/index.ts
 @@ -463,6 +463,12 @@ export class Xterm {
@@ -15,7 +15,7 @@ index a163ef6..c9503e2 100644
                  default:
                      console.log(`[ttyd] option: ${key}=${JSON.stringify(value)}`);
                      if (terminal.options[key] instanceof Object) {
-@@ -567,4 +573,75 @@ export class Xterm {
+@@ -567,4 +573,70 @@ export class Xterm {
              console.warn('[ttyd-mod] Opening link blocked as opener could not be cleared');
          }
      }
@@ -35,59 +35,54 @@ index a163ef6..c9503e2 100644
 +            !e.isComposing;
 +
 +        terminal.attachCustomKeyEventHandler((e: KeyboardEvent): boolean => {
++            // returns whether the event should be processed by xterm.js
++            if (!isCtrlV(e)) return true;
++
++            const ua = navigator.userAgent;
++            if (ua.includes('Firefox')) return firefox(e);
++            if (ua.includes('Chrome')) return chromium(e);
++            if (ua.includes('Chromium')) return chromium(e);
++
++            console.log('[ttyd-mod] this browser is not supported: ' + ua);
++            return true;
++        });
++        return true;
++
++        function firefox(e: KeyboardEvent): boolean {
++            void e;
 +            // In the case of Firefox, if false is returned here when
 +            // Ctrl+V is pressed, Firefox would paste by itself. Other
 +            // conditions also required, such as e.preventDefault() not
 +            // being called inside the keydown event handlers.
++            return false;
++        }
 +
-+            // returns whether the event should be processed by xterm.js
-+            return !isCtrlV(e);
-+        });
-+        document.addEventListener('keydown', pasteHandler, { capture: false });
-+        return true;
-+
-+        function pasteHandler(e: KeyboardEvent): void {
-+            if (isCtrlV(e)) {
-+                const ua = navigator.userAgent;
-+                if (ua.includes('Firefox')) return firefox(e);
-+                if (ua.includes('Chrome')) return chromium(e);
-+                if (ua.includes('Chromium')) return chromium(e);
-+                console.log('[ttyd-mod] browser is not supported: ' + ua);
-+            }
-+            return;
-+
-+            function firefox(e) {
-+                void e;
-+                return;
-+            }
-+
-+            function chromium(e) {
-+                withTimeout(navigator.clipboard.readText())
-+                    .then((text: string) => {
-+                        if (text) terminal.paste(text);
-+                    })
-+                    .catch(err => {
-+                        console.error('[ttyd-mod] readText():', err);
-+                    });
-+                e.preventDefault();
-+                return;
-+            }
-+
-+            // Timeout Helper
-+            function withTimeout<T>(p: Promise<T>, ms = 200): Promise<T> {
-+                return new Promise<T>((resolve, reject) => {
-+                    const id = setTimeout(() => {
-+                        reject(new Error('timeout'));
-+                    }, ms);
-+                    p.then(v => {
-+                        clearTimeout(id);
-+                        resolve(v);
-+                    }).catch(e => {
-+                        clearTimeout(id);
-+                        reject(e);
-+                    });
++        function chromium(e: KeyboardEvent): boolean {
++            withTimeout(navigator.clipboard.readText())
++                .then((text: string) => {
++                    if (text) terminal.paste(text);
++                })
++                .catch(err => {
++                    console.error('[ttyd-mod] readText():', err);
 +                });
-+            }
++            e.preventDefault();
++            return false;
++        }
++
++        // Timeout Helper
++        function withTimeout<T>(p: Promise<T>, ms = 200): Promise<T> {
++            return new Promise<T>((resolve, reject) => {
++                const id = setTimeout(() => {
++                    reject(new Error('timeout'));
++                }, ms);
++                p.then(v => {
++                    clearTimeout(id);
++                    resolve(v);
++                }).catch(e => {
++                    clearTimeout(id);
++                    reject(e);
++                });
++            });
 +        }
 +    }
  }
