@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 src="$1"
+patch=$(cd "$(dirname "$0")" && pwd)/$(basename "$0" .sh).patch
 
 # Set all characters classified as Ambiguous in East Asian Width to have
 # wide character width.

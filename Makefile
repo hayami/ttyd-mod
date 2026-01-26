@@ -86,8 +86,8 @@ install: $(src)/build/ttyd
 
 .PHONY:	patch-html
 patch-html:
-	set -ex; for i in ttyd-mod-scripts/patch-html-*; do $$i $(src); done
+	set -ex; for i in ttyd-mod-scripts/patch-html-*.sh; do $$i $(src); done
 
 .PHONY:	patch-ttyd
 patch-ttyd:
-	set -ex; for i in ttyd-mod-scripts/patch-ttyd-*; do $$i $(src); done
+	set -ex; for i in ttyd-mod-scripts/patch-ttyd-*.sh; do $$i $(src); done
